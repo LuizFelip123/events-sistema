@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
@@ -44,6 +44,9 @@ class EventController extends Controller
             $request->image->move(public_path('img/events'), $imageName);
             $event->image = $imageName;    
         }
+        
+        $event->user_id =Auth::user()->id;
+       
         $event->save();
 
         return Redirect('/')->with('msg', 'Evento Criado Com Sucesso!');
@@ -51,6 +54,18 @@ class EventController extends Controller
     }
     public  function show( $id){
         $event = Event::findOrFail($id);
-        return view('events.show', ['event'=>$event]);
+        $eventOwner = User::where('id', $event->user_id)->first()->toArray();
+        return view('events.show', ['event'=>$event, 'eventOwner'=>$eventOwner]);
+    }
+    public function joinEvent($id){
+     
+       if(Auth::check()){
+        $user = User::find(Auth::user()->id);
+        $user->events();    
+        // Chama uma função da classe User
+
+       }
+        
+      
     }
 }
